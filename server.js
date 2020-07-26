@@ -212,6 +212,84 @@ const updateEmployee = () => {
   })
 };
 
+
+const viewRoles = () => {
+  connection.promise().query(`
+      SELECT roles.id AS ID,
+      roles.title AS Role ,
+      roles.salary AS Salary,
+      departments.name AS Department
+      FROM roles 
+      LEFT JOIN departments ON roles.department_id = departments.id
+      ORDER BY id;`
+  )
+  .then( ([results]) => {
+  console.table(results);
+  return mainMenu(); 
+  })
+};
+
+// Create a role
+const createRole = () => {
+  return inquirer.prompt([
+    { 
+      type: "input",
+      name: "title",
+      message: "What is the role's title?",
+      validate: title => {
+      if (title) {
+        return true;
+      } else {
+        console.log('Please enter a title.');
+        return false;
+      }
+      }
+    },
+    {
+      type: "input",
+      name: "salary",
+      message: "What is the role's salary?",
+      validate: salary => {
+        if (salary) {
+          return true;
+        } else {
+          console.log('Please enter a salary.');
+          return false;
+        }
+      }
+    },
+    {
+      type: "list",
+      name: "department",
+      message: "To which department does this role belong?",
+      choices: allDepartments()
+    }
+  ])
+  .then(response => {
+    const roleTitle = response.title;
+    const roleSalary = response.salary;
+    const roleDepartment = response.department;
+    
+    var departmentId = '';
+    connection.promise().query(`SELECT * FROM departments;`, function (err, res) {
+      if (err) {throw err};
+      for (var i = 0; i < res.length; i++) {
+        if (roleDepartment === res[i].name){
+        departmentId = (res[i].id);
+        }
+      }
+      let post = {
+      title: roleTitle,
+      salary: roleSalary,
+      department_id: departmentId
+      };
+      connection.query(`INSERT INTO roles SET ?`, post);
+      console.log(post.title + " was added.");
+      return mainMenu();
+    })
+  })
+};
+
 console.log(
 `
   _______________________________________________________
