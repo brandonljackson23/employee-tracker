@@ -19,7 +19,7 @@ A tool that allows a user to manage their company employees from the command lin
 ---
 
 ## INSTALLATION
-To run the tool you will need to clone the project files from my GitHub page at github.com/brandonljackson23. You will also need to install all dependencies, which are listed below.
+To run the tool you will need to clone the project files from my GitHub page at https://github.com/brandonljackson23/employee-tracker. You will also need to install all dependencies, which are listed below.
 
 ---
 
