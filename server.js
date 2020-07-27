@@ -26,17 +26,17 @@ const allRoles = () => {
   return rolesList;
 };
 
-// Display all managers
+// Display all employees
 function allEmployees() {
-  const managersList = [];
+  const employeesList = [];
   connection.promise().query(`SELECT * FROM employees;`, function (err, res) {
     if (err) { throw err }
     for (var i = 0; i < res.length; i++) {
       let name = (res[i].first_name).concat(' ').concat(res[i].last_name)
-      managersList.push(name);
+      employeesList.push(name);
     }
   })
-  return managersList;
+  return employeesList;
 };
 
 // Display main menu
@@ -58,25 +58,25 @@ const mainMenu = () => {
       ]
     }
   )
-    .then(response => {
-      if (response.main_menu === "View all employees") {
-        return viewEmployees()
-      } else if (response.main_menu === "Add an employee") {
-        return createEmployee();
-      } else if (response.main_menu === "Update an employee's role") {
-        return updateEmployee();
-      } else if (response.main_menu === "View all roles") {
-        return viewRoles();
-      } else if (response.main_menu === "Add a role") {
-        return createRole();
-      } else if (response.main_menu === "View all departments") {
-        return viewDepartments();
-      } else if (response.main_menu === "Add a department") {
-        return createDepartment();
-      } else if (response.main_menu === "Exit") {
-        return exitMenu();
-      }
-    })
+  .then(response => {
+    if (response.main_menu === "View all employees") {
+      return viewEmployees()
+    } else if (response.main_menu === "Add an employee") {
+      return createEmployee();
+    } else if (response.main_menu === "Update an employee's role") {
+      return updateEmployee();
+    } else if (response.main_menu === "View all roles") {
+      return viewRoles();
+    } else if (response.main_menu === "Add a role") {
+      return createRole();
+    } else if (response.main_menu === "View all departments") {
+      return viewDepartments();
+    } else if (response.main_menu === "Add a department") {
+      return createDepartment();
+    } else if (response.main_menu === "Exit") {
+      return exitMenu();
+    }
+  })
 };
 
 const viewEmployees = () => {
@@ -171,12 +171,7 @@ const createEmployee = () => {
           manager_id: managerId
         }
         connection.query(`INSERT INTO employees SET ?`, post);
-        console.log(`
-                
-`+ post.first_name + " " + post.last_name + ` was added.
-
-                `
-        );
+        console.log(post.first_name + " " + post.last_name + " was added.");
         return mainMenu();
       })
     })
@@ -187,29 +182,33 @@ const updateEmployee = () => {
   return inquirer.prompt([
     {
       type: "list",
+      name: "employee",
+      message: "Which employee would you like to update?",
+      choices: allEmployees()
+    },
+    {
+      type: "list",
       name: "role",
-      message: "What is the employee's title?",
+      message: "Which role would you like to assign to this employee?",
       choices: allRoles()
     }
   ])
-    .then(response => {
-      if (response.role === "Role") {
-        let targetEmployee = response.updateEmployeeID;
-        let newRole = response.updateEmployeeRole;
-        var roleID = '';
-        connection.promise().query(`SELECT * FROM roles;`, function (err, res) {
-          if (err) { throw err };
-          for (var i = 0; i < res.length; i++) {
-            if (newRole === res[i].title) {
-              roleID = (res[i].id);
-            }
-          }
-          connection.query(`UPDATE employees SET employees.role_id = ? WHERE CONCAT(employees.first_name, ' ', employees.last_name) = ?;`, [roleID, targetEmployee]);
-          console.log("You updated " + targetEmployee + "'s role to " + newRole);
-          return mainMenu();
-        })
+  .then(response => {
+    let targetEmployee = response.employee;
+    let newRole = response.role;
+    var roleID = '';
+    connection.promise().query(`SELECT * FROM roles;`, function (err, res) {
+      if (err) { throw err };
+      for (var i = 0; i < res.length; i++) {
+        if (newRole === res[i].title) {
+          roleID = (res[i].id);
+        }
       }
+      connection.query(`UPDATE employees SET employees.role_id = ? WHERE CONCAT(employees.first_name, ' ', employees.last_name) = ?;`, [roleID, targetEmployee]);
+      console.log(targetEmployee + "'s role is now set to " + newRole);
+      return mainMenu();
     })
+  })
 };
 
 const viewRoles = () => {
